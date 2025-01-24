@@ -54,7 +54,7 @@ const getAllSongsHandler = () => {
 const getSongByIdHandler = (request, h) => {
   const { id } = request.params;
   const song = songs.filter((m) => m.id === id)[0];
-  const songData = songs.map(song => ({
+  const songData = song.map(song => ({
     id: song.id,
     title: song.title,
     year: song.year,

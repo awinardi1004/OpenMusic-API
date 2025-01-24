@@ -1,8 +1,8 @@
-const routes = () => [
+const routes = (handler) => [
     {
         method: 'POST',
         path: '/albums',
-        handler: handler.posyAlbumHandler,
+        handler: handler.postAlbumHandler,
       },
       {
         method: 'GET',
