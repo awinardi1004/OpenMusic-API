@@ -56,7 +56,7 @@ class albumsService {
     deleteAlbumById(id){
         const index = this._albums.findIndex((album) => album.id === id);
         if (index === -1) {
-          throw new Error('Catatan Album dihapus. Id tidak ditemukan');
+          throw new Error('Album gagal dihapus. Id tidak ditemukan');
         }
         this._albums.splice(index, 1);
     }
