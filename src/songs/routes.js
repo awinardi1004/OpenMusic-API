@@ -1,36 +1,36 @@
 const { 
-    addMusicHandler,
-    getAllMusicHandler,
-    getMusicByIdHandler,
-    editMusicByIdHandler,
-    deleteMusicByIdHandler
+    addSongHandler,
+    getAllSongsHandler,
+    getSongByIdHandler,
+    editSongByIdHandler,
+    deleteSongByIdHandler,
  } = require('./handler');
 
  const routes = [
     {
         method: 'POST',
         path: '/songs',
-        handler: addMusicHandler,
+        handler: addSongHandler,
     },
     {
         method: 'GET',
         path: '/songs',
-        handler: getAllMusicHandler,
+        handler: getAllSongsHandler,
     },
     {
         method: 'GET',
         path: '/songs/{id}',
-        handler: getMusicByIdHandler,
+        handler: getSongByIdHandler,
     },
     {
         method: 'PUT',
         path: '/songs/{id}',
-        handler: editMusicByIdHandler,
+        handler: editSongByIdHandler,
     },
     {
         method: 'DELETE',
         path: '/songs/{id}',
-        handler: deleteMusicByIdHandler,
+        handler: deleteSongByIdHandler,
     },
 ];
   

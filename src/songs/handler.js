@@ -1,20 +1,20 @@
 const { nanoid } = require('nanoid');
-const musics = require('./musics');
+const songs = require('./songs');
 
-const addMusicHandler = (request, h) => {
+const addSongHandler = (request, h) => {
   const {title='untitled', year, genre, performer, duration, albumId} = request.payload;
 
     const id = nanoid(16);
     const createdAt = new Date().toISOString();
     const updatedAt = createdAt;
 
-    const newMusic = {
+    const newSong = {
         id, title, year, performer, genre, duration, albumId, createdAt, updatedAt,
     };
 
-    musics.push(newMusic);
+    songs.push(newSong);
 
-    const isSuccess = musics.filter((music) => music.id === id).length > 0;
+    const isSuccess = songs.filter((music) => music.id === id).length > 0;
 
     if (isSuccess) {
         const response = h.response({
@@ -36,22 +36,40 @@ const addMusicHandler = (request, h) => {
       return response;
 };
 
-const getAllMusicHandler = () => ({
-  status: 'success',
-  data: {
-    musics,
-  },
-});
+const getAllSongsHandler = () => {
+  const songsData = songs.map(songs => ({
+    id: songs.id,
+    title: songs.title,
+    performer: songs.performer,
+  }));
 
-const getMusicByIdHandler = (request, h) => {
+  return {
+    status: 'success',
+    data: {
+      songs: songsData,
+    },
+  };
+};
+
+const getSongByIdHandler = (request, h) => {
   const { id } = request.params;
-  const music = musics.filter((m) => m.id === id)[0];
+  const song = songs.filter((m) => m.id === id)[0];
+  const songData = songs.map(song => ({
+    id: song.id,
+    title: song.title,
+    year: song.year,
+    performer: song.performer,
+    genre: song.genre,
+    duration: song.duration,
+    albumId: song.albumId
+  }));
 
-  if (music !== undefined) {
+
+  if (song !== undefined) {
     return {
       status: 'success',
       data: {
-        music,
+        song : songData
       },
     };
   }
@@ -64,17 +82,17 @@ const getMusicByIdHandler = (request, h) => {
   return response;
 };
 
-const editMusicByIdHandler = (request, h) => {
+const editSongByIdHandler = (request, h) => {
   const { id } = request.params;
 
   const { title, year, genre, performer, duration, albumId } = request.payload;
   const updatedAt = new Date().toISOString();
 
-  const index = musics.findIndex((music) => music.id === id);
+  const index = songs.findIndex((song) => song.id === id);
 
   if (index !== -1) {
-    albums[index] = {
-      ...albums[index],
+    songs[index] = {
+      ...songs[index],
       title,
       year,
       genre,
@@ -100,13 +118,13 @@ const editMusicByIdHandler = (request, h) => {
   return response;
 };
 
-const deleteMusicByIdHandler = (request, h) => {
+const deleteSongByIdHandler = (request, h) => {
   const { id } = request.params;
 
-  const index = musics.findIndex((music) => music.id === id);
+  const index = songs.findIndex((song) => song.id === id);
 
   if (index !== -1) {
-    musics.splice(index, 1);
+    songs.splice(index, 1);
     const response = h.response({
       status: 'success',
       message: 'music berhasil dihapus',
@@ -124,9 +142,9 @@ const deleteMusicByIdHandler = (request, h) => {
 };
 
 module.exports = {
-  addMusicHandler,
-  getAllMusicHandler,
-  getMusicByIdHandler,
-  editMusicByIdHandler,
-  deleteMusicByIdHandler
+  addSongHandler,
+  getAllSongsHandler,
+  getSongByIdHandler,
+  editSongByIdHandler,
+  deleteSongByIdHandler
 };
