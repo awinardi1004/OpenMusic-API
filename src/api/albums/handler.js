@@ -1,12 +1,20 @@
 class AlbumsHandler {
-    constructor(service) {
+    constructor(service, validator) {
         this._service = service;
+        this._validator = validator;
+
+        this.postAlbumHandler = this.postAlbumHandler.bind(this);
+        this.getAlbumsHandler = this.getAlbumsHandler.bind(this);
+        this.getAlbumByIdHandler = this.getAlbumByIdHandler.bind(this);
+        this.putAlbumByIdHandler = this.putAlbumByIdHandler.bind(this);
+        this.deleteAlbumByIdHandler = this.deleteAlbumByIdHandler.bind(this);
     }
 
     postAlbumHandler(request, h) {
         try {
+            this._validator.validateAlbumPayload(request.payload);
             const {name , year } = request.payload;
-            const albumId = this.service.addAlbum({name, year});
+            const albumId = this._service.addAlbum({name, year});
             
             const response = h.response({
                 status: 'success',
@@ -28,7 +36,7 @@ class AlbumsHandler {
     }
 
     getAlbumsHandler() {
-        const albums = this._service.getalbums();
+        const albums = this._service.getAlbums();
         return {
             status: 'success',
             data: {
@@ -57,6 +65,7 @@ class AlbumsHandler {
     }
     putAlbumByIdHandler(request, h) {
         try {
+            this._validator.validateAlbumPayload(request.payload);
             const { id } = request.params;
             this._service.editAlbumById(id, request.payload);
             return {

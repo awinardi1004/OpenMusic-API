@@ -13,9 +13,9 @@ class songsService {
             id, title, year, performer, genre, duration, albumId, createdAt, updatedAt,
         };
         
-        songs.push(newSong);
+        this._songs.push(newSong);
 
-        const isSuccess = songs.filter((song) => song.id === id).length > 0;
+        const isSuccess = this._songs.filter((song) => song.id === id).length > 0;
 
         if (!isSuccess) {
             throw new Error('Music gagal ditambahkan');
@@ -46,7 +46,7 @@ class songsService {
         const updatedAt = new Date().toISOString();
 
         this._songs[index] = {
-            ...songs[index],
+            ...this._songs[index],
             title,
             year,
             genre,
