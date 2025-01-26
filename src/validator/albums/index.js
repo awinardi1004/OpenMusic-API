@@ -1,6 +1,6 @@
 const { AlbumPayloadSchema } = require('./schema');
  
-const AlbumValidator = {
+const AlbumsValidator = {
   validateAlbumPayload: (payload) => {
     const validationResult = AlbumPayloadSchema.validate(payload);
     if (validationResult.error) {
@@ -9,4 +9,4 @@ const AlbumValidator = {
   },
 };
  
-module.exports = AlbumValidator;
+module.exports = AlbumsValidator;

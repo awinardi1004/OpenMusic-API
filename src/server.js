@@ -20,39 +20,6 @@ const init = async () => {
     },
   });
 
-  // Global error handling
-  server.ext('onPreResponse', (request, h) => {
-    const { response } = request;
-
-    if (response.isBoom) {
-      const { statusCode, message } = response.output.payload;
-
-      // 400 Bad Request
-      if (statusCode === 400) {
-        return h.response({
-          status: 'fail',
-          message: message || 'Bad Request',
-        }).code(400);
-      }
-
-      // 404 Not Found
-      if (statusCode === 404) {
-        return h.response({
-          status: 'fail',
-          message: message || 'Resource not found',
-        }).code(404);
-      }
-
-      // 500 Internal Server Error
-      return h.response({
-        status: 'error',
-        message: 'Internal Server Error',
-      }).code(500);
-    }
-
-    return h.continue;
-  });
-
   await server.register([
     {
       plugin: albums,
