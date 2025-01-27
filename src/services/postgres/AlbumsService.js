@@ -61,11 +61,11 @@ class AlbumsService {
             id: result.rows[0].album_id,
             name: result.rows[0].album_name,
             year: result.rows[0].album_year,
-            songs: result.rows.map(row => ({
+            songs: result.rows[0].song_id ? result.rows.map(row => ({
                 id: row.song_id,
                 title: row.song_title,
                 performer: row.song_performer,
-            })),
+            })) : [],
         };
     
         return albumData;
