@@ -47,29 +47,18 @@ class SongsService {
     }
 
     async editSongById(id, {title, year, performer, genre, duration, albumId}) {
-        try {
-            const updatedAt = new Date().toISOString();
-            const query = {
-                text: 'UPDATE songs SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, album_id = $6, updated_at = $7 WHERE id = $8 RETURNING id',
-                values: [title, year, performer, genre, duration, albumId, updatedAt, id],
-            };
-    
-            const result = await this._pool.query(query);
-    
-            // Log the result for debugging purposes
-            console.log(result);
-    
-            if (!result.rows.length) {
-                throw new NotFoundError('Gagal memperbarui music. Id tidak ditemukan');
-            }
-    
-            // You can return something here if needed, like the updated id.
-            return result.rows[0].id;
-        } catch (error) {
-            // Log the error details to help with debugging
-            console.error('Error in editSongById:', error);
-            throw error; // Re-throw the error after logging it
+        const updatedAt = new Date().toISOString();
+        const query = {
+            text: 'UPDATE songs SET title = $1, year = $2, performer = $3, genre = $4, duration = $5, album_id = $6, updated_at = $7 WHERE id = $8 RETURNING id',
+            values: [title, year, performer, genre, duration, albumId, updatedAt, id],
+        };
+
+        const result = await this._pool.query(query);
+
+        if (!result.rows.length) {
+            throw new NotFoundError('Gagal memperbarui music. Id tidak ditemukan');
         }
+
     }
     
 
