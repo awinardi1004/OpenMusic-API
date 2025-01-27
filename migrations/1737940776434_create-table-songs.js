@@ -29,6 +29,9 @@ exports.up = (pgm) => {
         album_id: {
             type: "VARCHAR(50)",
             notNull: false,
+            references: '"albums"(id)', 
+            onDelete: 'SET NULL',
+            onUpdate: 'CASCADE',
         },
         created_at: {
             type: 'TIMESTAMP',
@@ -40,7 +43,6 @@ exports.up = (pgm) => {
         },
     });
 };
-
 
 exports.down = (pgm) => {
     pgm.dropTable('songs');
