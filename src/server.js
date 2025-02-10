@@ -15,7 +15,7 @@ const SongsValidator = require('./validator/songs');
 
 // users
 const users = require('./api/users');
-const UsersService = require('./services/postgres/UsersService');
+const UsersService = require('./services/postgres/UserService');
 const UsersValidator = require('./validator/users');
 
 
