@@ -30,6 +30,10 @@ const playlists = require('./api/playlists');
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const PlaylistsValidator = require('./validator/playlists');
 
+// playlistSongs
+const playlistSongs = require('./api/playlistsSongs');
+const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
+const PlaylistSongsValidator = require('./validator/playlistsSongs');
 
 const init = async () => {
   const songsService = new SongsService();
@@ -37,6 +41,7 @@ const init = async () => {
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
   const playlistsService = new PlaylistsService();
+  const playlistSongsService = new PlaylistSongsService();
 
   const server = Hapi.server({
     port: process.env.PORT,
@@ -55,12 +60,12 @@ const init = async () => {
   ]);
 
   server.auth.strategy('playlists_jwt', 'jwt', {
-    keys: process.env.ACCESS_TOKEN_KEY,
+    keys: process.env.ACCESS_TOKEN_KEY || 'default_secret_key', 
     verify: {
       aud: false,
       iss: false,
       sub: false,
-      maxAgeSec: process.env.ACCESS_TOKEN_AGE,
+      maxAgeSec: Number(process.env.ACCESS_TOKEN_AGE) || 3600,
     },
     validate: (artifacts) => ({
       isValid: true,
@@ -95,7 +100,7 @@ const init = async () => {
     {
       plugin: authentications,
       options: {
-        authenticationsService,
+        service: authenticationsService,
         usersService,
         tokenManager: TokenManager,
         validator: AuthenticationsValidator,
@@ -106,6 +111,14 @@ const init = async () => {
       options: {
         service: playlistsService,
         validator: PlaylistsValidator,
+      },
+    },
+    {
+      plugin: playlistSongs,
+      options: {
+        service: playlistSongsService, 
+        playlistsService,
+        validator: PlaylistSongsValidator,
       },
     },
   ]);
@@ -123,10 +136,14 @@ const init = async () => {
     }
       
     return h.continue;
-
   });
-  await server.start();
-  console.log(`Server berjalan pada ${server.info.uri}`);
+
+  try {
+    await server.start();
+    console.log(`Server berjalan pada ${server.info.uri}`);
+  } catch (error) {
+    console.error('Gagal menjalankan server:', error);
+  }
 };
 
 init();
