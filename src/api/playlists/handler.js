@@ -12,29 +12,31 @@ class PlaylistsHandler {
         this._validator.validatePlaylistPayload(request.payload);
         const {name} = request.payload;
         const { id: credentialId } = request.auth.credentials;
-        const PlaylistId = await this._service.addPlaylist({name, owner: credentialId,});
+        const playlistId = await this._service.addPlaylist({name, owner: credentialId,});
         
         const response = h.response({
             status: 'success',
             message: 'Playlist berhasil ditambahkan',
             data: {
-                PlaylistId,
+                playlistId,
             },
         });
         response.code(201);
         return response;
     }
-
+    
     async getPlaylistsHandler(request) {
         const { id: credentialId } = request.auth.credentials;
-        const playlists = await this._service.getPlaylist(credentialId);
+        const playlists = await this._service.getPlaylist(credentialId); 
+        
         return {
             status: 'success',
             data: {
-                playlists,
+                playlists, 
             },
         };
     }
+
 
 
     async deletePlaylistByIdHandler(request) {
