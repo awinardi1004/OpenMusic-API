@@ -1,6 +1,6 @@
 exports.up = (pgm) => {
     pgm.createTable('playlist_activities', {
-        activity_id: {
+        id: {
             type: 'VARCHAR(50)',
             primaryKey: true,
         },
@@ -21,10 +21,6 @@ exports.up = (pgm) => {
             notNull: true,
             references: '"songs"',
             onDelete: 'CASCADE',
-        },
-        action: {
-            type: 'TEXT',
-            notNull: true,
         },
         time: {
             type: 'TIMESTAMP',

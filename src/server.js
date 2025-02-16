@@ -29,39 +29,30 @@ const AuthenticationsValidator = require('./validator/authentications');
 const playlists = require('./api/playlists');
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const PlaylistsValidator = require('./validator/playlists');
-
-// playlistSongs
-const playlistSongs = require('./api/playlistsSongs');
 const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
-const PlaylistSongsValidator = require('./validator/playlistsSongs');
+const ActivitiesService = require('./services/postgres/ActivitiesService');
 
 // collaborations
 const collaborations = require('./api/collaborations');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const CollaborationsValidator = require('./validator/collaborations');
 
-// activities
-const ActivitiesService = require('./services/postgres/ActivitiesService');
-const activities = require('./api/activities');
-
-
 const init = async () => {
   const songsService = new SongsService();
   const albumsService = new AlbumsService();
   const usersService = new UsersService();
   const authenticationsService = new AuthenticationsService();
-  const playlistsService = new PlaylistsService();
   const activitiesService = new ActivitiesService();
-
   const collaborationsService = new CollaborationsService();
-  const playlistSongsService = new PlaylistSongsService(collaborationsService, activitiesService);
+  const playlistsService = new PlaylistsService(collaborationsService);
+  const playlistSongsService = new PlaylistSongsService();
 
   const server = Hapi.server({
-    port: process.env.PORT,
-    host: process.env.HOST,
+    port: process.env.PORT || 5000,
+    host: process.env.HOST || 'localhost',
     routes: {
       cors: {
-        origin: ['*'], 
+        origin: ['*'],
       },
     },
   });
@@ -72,8 +63,8 @@ const init = async () => {
     },
   ]);
 
-  server.auth.strategy('playlists_jwt', 'jwt', {
-    keys: process.env.ACCESS_TOKEN_KEY || 'default_secret_key', 
+  server.auth.strategy('openmusic_jwt', 'jwt', {
+    keys: process.env.ACCESS_TOKEN_KEY || 'default_secret_key',
     verify: {
       aud: false,
       iss: false,
@@ -91,14 +82,14 @@ const init = async () => {
   await server.register([
     {
       plugin: albums,
-      options: { 
+      options: {
         service: albumsService,
         validator: AlbumsValidator,
       },
     },
     {
       plugin: songs,
-      options: { 
+      options: {
         service: songsService,
         validator: SongsValidator,
       },
@@ -122,16 +113,10 @@ const init = async () => {
     {
       plugin: playlists,
       options: {
-        service: playlistsService,
-        validator: PlaylistsValidator,
-      },
-    },
-    {
-      plugin: playlistSongs,
-      options: {
-        service: playlistSongsService, 
-        playlistsService,
-        validator: PlaylistSongsValidator,
+        service: playlistsService,  // Nama: service
+        playlistSongsService: playlistSongsService,  // Nama: playlistSongsService
+        activitiesService: activitiesService,  // Nama: activitiesService
+        validator: PlaylistsValidator,  // Nama: validator
       },
     },
     {
@@ -142,18 +127,11 @@ const init = async () => {
         validator: CollaborationsValidator,
       },
     },
-    {
-      plugin: activities,
-      options: {
-          service: activitiesService,
-          playlistsService,
-      },
-    },
   ]);
 
   server.ext('onPreResponse', (request, h) => {
     const { response } = request;
-  
+
     if (response instanceof ClientError) {
       const newResponse = h.response({
         status: 'fail',
@@ -162,7 +140,7 @@ const init = async () => {
       newResponse.code(response.statusCode);
       return newResponse;
     }
-      
+
     return h.continue;
   });
 

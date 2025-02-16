@@ -10,7 +10,7 @@ class SongsService {
     }
 
     async addSong({title, year, performer, genre, duration, albumId}) {
-        const id = nanoid(16);
+        const id = "song-" + nanoid(16);
         const createdAt = new Date().toISOString();
         const updatedAt = createdAt;
 
@@ -76,6 +76,19 @@ class SongsService {
         }
       
     }
+
+    async verifySongExists(songId) {
+        const query = {
+            text: 'SELECT id FROM songs WHERE id = $1',
+            values: [songId],
+        };
+        const result = await this._pool.query(query);
+    
+        if (!result.rows.length) {
+            throw new NotFoundError('Lagu tidak ditemukan');
+        }
+    }
+    
 }
 
 module.exports = SongsService;
