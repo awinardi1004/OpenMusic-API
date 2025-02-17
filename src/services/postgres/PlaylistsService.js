@@ -79,18 +79,18 @@ class PlaylistsService {
 
     async verifyPlaylistAccess(playlistId, userId) {
         try {
-            await this.verifyPlaylistOwner(playlistId, userId);
+          await this.verifyPlaylistOwner(playlistId, userId);
         } catch (error) {
-            if (error instanceof NotFoundError) {  
-                throw error; // Seharusnya melempar 404 jika playlist tidak ditemukan
-            }
-    
-            const isCollaborator = await this._collaborationService.verifyCollaborator(playlistId, userId);
-            if (!isCollaborator) {
-                throw new AuthorizationError('Anda tidak berhak mengakses resource ini');
-            }
+          if (error instanceof NotFoundError) {
+            throw error;
+          }
+          try {
+            await this._collaborationService.verifyCollaborator(playlistId, userId);
+          } catch (collabError) {
+            throw error;
+          }
         }
-    }
+      }
     
 }
 

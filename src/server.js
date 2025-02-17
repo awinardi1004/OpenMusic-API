@@ -113,10 +113,10 @@ const init = async () => {
     {
       plugin: playlists,
       options: {
-        service: playlistsService,  // Nama: service
-        playlistSongsService: playlistSongsService,  // Nama: playlistSongsService
-        activitiesService: activitiesService,  // Nama: activitiesService
-        validator: PlaylistsValidator,  // Nama: validator
+        service: playlistsService,
+        playlistSongsService: playlistSongsService,
+        activitiesService: activitiesService,
+        validator: PlaylistsValidator,
       },
     },
     {
