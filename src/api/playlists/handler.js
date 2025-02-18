@@ -61,6 +61,8 @@ class PlaylistsHandler {
 
         await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
         await this._playlistsSongsService.addPlaylistSong(playlistId, songId);
+        await this._activitiesService.addPlaylistActivity(playlistId, credentialId, songId, 'add');
+
 
         return h.response({
             status: 'success',
@@ -89,6 +91,7 @@ class PlaylistsHandler {
 
         await this._playlistsService.verifyPlaylistAccess(playlistId, credentialId);
         await this._playlistsSongsService.deletePlaylistSong(playlistId, songId, credentialId);
+        await this._activitiesService.addPlaylistActivity(playlistId, credentialId, songId, 'delete');
 
         return h.response({
             status: 'success',
@@ -106,7 +109,7 @@ class PlaylistsHandler {
 
         return {
             status: "success",
-            data: { activities },
+            data: activities,
         };
     }
 }

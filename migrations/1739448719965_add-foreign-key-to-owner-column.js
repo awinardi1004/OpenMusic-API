@@ -22,6 +22,5 @@ exports.up = (pgm) => {
 };
  
 exports.down = (pgm) => {
-  // menghapus tabel collaborations
   pgm.dropTable('collaborations');
 };

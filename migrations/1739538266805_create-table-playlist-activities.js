@@ -22,10 +22,15 @@ exports.up = (pgm) => {
             references: '"songs"',
             onDelete: 'CASCADE',
         },
+        action: {
+            type: 'VARCHAR(20)',
+            notNull: true,
+            check: "action IN ('add', 'delete')",
+        },
         time: {
             type: 'TIMESTAMP',
             notNull: true,
-            default: pgm.func('current_timestamp'),
+            default: pgm.func('NOW()'),
         },
     });
 };

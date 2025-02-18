@@ -4,14 +4,14 @@ const mapDBToPlaylistModel = ({
   created_at,
   updated_at,
   owner,
-  username, // Tambahkan username
+  username,
 }) => ({
   id,
   name,
   createdAt: created_at,
   updatedAt: updated_at,
   owner,
-  username, // Pastikan username ikut dikembalikan
+  username,
 });
 
 module.exports = { mapDBToPlaylistModel };

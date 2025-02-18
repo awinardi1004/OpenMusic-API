@@ -9,7 +9,6 @@ class PlaylistsSongsService {
     }
 
     async addPlaylistSong(playlistId, songId) {
-        // Pastikan playlistId ada
         const playlistCheckQuery = {
             text: 'SELECT id FROM playlists WHERE id = $1',
             values: [playlistId],
@@ -20,7 +19,6 @@ class PlaylistsSongsService {
             throw new NotFoundError('Playlist tidak ditemukan');
         }
     
-        // Pastikan songId ada
         const songCheckQuery = {
             text: 'SELECT id FROM songs WHERE id = $1',
             values: [songId],
@@ -91,7 +89,6 @@ class PlaylistsSongsService {
     
     async deletePlaylistSong(playlistId, songId) {
         try {
-            // Cek apakah playlist ada
             const playlistCheckQuery = {
                 text: 'SELECT id FROM playlists WHERE id = $1',
                 values: [playlistId],
@@ -102,7 +99,6 @@ class PlaylistsSongsService {
                 throw new NotFoundError('Playlist tidak ditemukan');
             }
     
-            // Cek apakah lagu ada di dalam playlist
             const query = {
                 text: 'DELETE FROM playlist_songs WHERE playlist_id = $1 AND song_id = $2 RETURNING id',
                 values: [playlistId, songId],
