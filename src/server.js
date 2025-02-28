@@ -3,44 +3,34 @@ require('dotenv').config();
 const Hapi = require('@hapi/hapi');
 const Jwt = require('@hapi/jwt');
 const ClientError = require('./exceptions/ClientError');
+const path = require('path');
 
-// albums
+// Import services & validators
 const albums = require('./api/albums');
 const AlbumsService = require('./services/postgres/AlbumsService');
 const AlbumsValidator = require('./validator/albums');
-
-// songs
 const songs = require('./api/songs');
 const SongsService = require('./services/postgres/SongsService');
 const SongsValidator = require('./validator/songs');
-
-// users
 const users = require('./api/users');
 const UsersService = require('./services/postgres/UsersService');
 const UsersValidator = require('./validator/users');
-
-// authentications
 const authentications = require('./api/authentications');
 const AuthenticationsService = require('./services/postgres/AuthenticationsService');
 const TokenManager = require('./tokenize/TokenManager');
 const AuthenticationsValidator = require('./validator/authentications');
-
-// playlists
 const playlists = require('./api/playlists');
 const PlaylistsService = require('./services/postgres/PlaylistsService');
 const PlaylistsValidator = require('./validator/playlists');
 const PlaylistSongsService = require('./services/postgres/PlaylistSongsService');
 const ActivitiesService = require('./services/postgres/ActivitiesService');
-
-// collaborations
 const collaborations = require('./api/collaborations');
 const CollaborationsService = require('./services/postgres/CollaborationsService');
 const CollaborationsValidator = require('./validator/collaborations');
-
-// Exports
 const _exports = require('./api/exports');
 const ProducerService = require('./services/rabbitmq/ProducerService');
 const ExportsValidator = require('./validator/exports');
+const StorageService = require('./services/storage/StorageService');
 
 const init = async () => {
   const songsService = new SongsService();
@@ -52,6 +42,7 @@ const init = async () => {
   const playlistsService = new PlaylistsService(collaborationsService);
   const playlistSongsService = new PlaylistSongsService();
   const producerService = new ProducerService();
+  const storageService = new StorageService(path.resolve(__dirname, 'api/albums/file/covers'));
 
   const server = Hapi.server({
     port: process.env.PORT || 5000,
@@ -90,6 +81,7 @@ const init = async () => {
       plugin: albums,
       options: {
         service: albumsService,
+        storageService: storageService,
         validator: AlbumsValidator,
       },
     },

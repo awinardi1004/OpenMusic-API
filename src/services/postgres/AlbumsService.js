@@ -3,6 +3,7 @@ const { nanoid } = require('nanoid');
 const InvariantError = require('../../exceptions/InvariantError');
 const NotFoundError = require('../../exceptions/NotFoundError');
 const { mapDBToAlbumModel } = require('../../utils/albums');
+const ClientError = require('../../exceptions/ClientError');
 
 
 class AlbumsService {
@@ -40,7 +41,8 @@ class AlbumsService {
                 SELECT 
                     a.id AS album_id, 
                     a.name AS album_name, 
-                    a.year AS album_year, 
+                    a.year AS album_year,
+                    a.cover AS cover_url,
                     s.id AS song_id, 
                     s.title AS song_title, 
                     s.performer AS song_performer
@@ -61,6 +63,7 @@ class AlbumsService {
             id: result.rows[0].album_id,
             name: result.rows[0].album_name,
             year: result.rows[0].album_year,
+            coverUrl: result.rows[0].cover_url,
             songs: result.rows[0].song_id ? result.rows.map(row => ({
                 id: row.song_id,
                 title: row.song_title,
@@ -98,6 +101,100 @@ class AlbumsService {
         if (!result.rows.length) {
             throw new NotFoundError('Album gagal dihapus. Id tidak ditemukan');
         }
+    }
+
+    async updateAlbumCover(id, cover) {
+
+        const query = {
+            text: 'UPDATE albums SET cover = $1 WHERE id = $2',
+            values: [cover, id],
+        }
+        await this._pool.query(query);
+    }
+
+    async addLikeAlbum(userId, albumId) {
+        const albumCheck = {
+            text: 'SELECT id FROM albums WHERE id = $1',
+            values: [albumId],
+        }
+
+        const albumCheckResult = await this._pool.query(albumCheck);
+
+        if (!albumCheckResult.rows.length) {
+            throw new NotFoundError('Album tidak ditemukan');
+        };
+
+        const likeCheck = {
+            text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
+            values: [userId, albumId],
+        };
+
+        const likeCheckResult = await this._pool.query(likeCheck);
+        if (likeCheckResult.rows.length) {
+            throw new ClientError('anda sudah like album');
+        } else {
+            const id = `album-like-${nanoid(16)}`;
+
+            const queryLike = {
+                text: 'INSERT INTO user_album_likes VALUES($1, $2, $3) RETURNING id',
+                values: [id, userId, albumId],
+            };
+
+            await this._pool.query(queryLike);
+        }
+    }
+
+    async getLikeAlbumById(albumId) {
+        const albumCheck = {
+            text: 'SELECT id FROM albums WHERE id = $1',
+            values: [albumId],
+        };
+    
+        const albumCheckResult = await this._pool.query(albumCheck);
+    
+        if (!albumCheckResult.rows.length) {
+            throw new NotFoundError('Album tidak ditemukan');
+        }
+    
+        const query = {
+            text: `
+                SELECT 
+                    COUNT(l.id) AS total_likes
+                FROM albums a 
+                LEFT JOIN user_album_likes l ON a.id = l.album_id
+                WHERE a.id = $1
+            `,
+            values: [albumId],
+        };
+    
+        const result = await this._pool.query(query);
+    
+        return { likes: parseInt(result.rows[0].total_likes, 10) };
+    }
+    
+    async deleteLikeAlbum(userId, albumId) {
+        const albumCheck = {
+            text: 'SELECT id FROM albums WHERE id = $1',
+            values: [albumId],
+        };
+    
+        const albumCheckResult = await this._pool.query(albumCheck);
+    
+        if (!albumCheckResult.rows.length) {
+            throw new NotFoundError('Album tidak ditemukan');
+        }
+    
+        const query = {
+            text: 'DELETE FROM user_album_likes WHERE user_id = $1 AND album_id = $2 RETURNING id',
+            values: [userId, albumId],
+        };
+    
+        const result = await this._pool.query(query);
+    
+        if (!result.rows.length) {
+            throw new NotFoundError('Like gagal dihapus. Like tidak ditemukan untuk album ini');
+        }
+    
     }
 }
 
