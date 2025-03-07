@@ -88,7 +88,7 @@ class AlbumsHandler {
         }
 
         const filename = await this._storageService.writeFile(cover, cover.hapi);
-        const fileLocation = `http://${process.env.HOST}:${process.env.PORT}/upload/covers/${filename}`;
+        const fileLocation = `http://localhost:5000/albums/covers/${filename}`;
 
         await this._service.updateAlbumCover(id, fileLocation);
 
@@ -112,15 +112,18 @@ class AlbumsHandler {
         }).code(201);
     }
 
-    async getLikeAlbumByIdHandler(request) {
+    async getLikeAlbumByIdHandler(request, h) {
         const { id } = request.params;
         const likeAlbum = await this._service.getLikeAlbumById(id);
-
-        return {
+    
+        return h.response({
             status: 'success',
-            data: likeAlbum,
-        };
+            data: {
+                likes: likeAlbum.likes,
+            },
+        }).header('X-Data-Source', likeAlbum.source);
     }
+    
 
     async deleteLikeAlbumByIdHandler(request) {
         const { id : albumId } = request.params;

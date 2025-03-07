@@ -1,3 +1,6 @@
+const path = require('path');
+
+
 const routes = (handler) => [
   {
     method: 'POST',
@@ -39,8 +42,12 @@ const routes = (handler) => [
   },
   {
     method: 'GET',
-    path: '/albums/{id}/likes',
-    handler: handler.getLikeAlbumByIdHandler,
+    path: '/albums/{param*}',
+    handler: {
+      directory: {
+        path: path.resolve(__dirname, 'file'),
+      },
+    },
   },
   {
     method: 'POST',
@@ -49,6 +56,11 @@ const routes = (handler) => [
     options: {
       auth: 'openmusic_jwt',
     },
+  },
+  {
+    method: 'GET',
+    path: '/albums/{id}/likes',
+    handler: handler.getLikeAlbumByIdHandler,
   },
   {
     method: 'DELETE',

@@ -60,13 +60,10 @@ class CollaborationsService {
       values: [playlistId, userId],
     };
   
-    try {
-      const result = await this._pool.query(query);
-      if (!result.rows.length) {
-        throw new InvariantError('Kolaborasi gagal diverifikasi');
-      }
-    } catch (error) {
-      throw new InvariantError('Terjadi kesalahan dalam memverifikasi kolaborator');
+    const result = await this._pool.query(query);
+    
+    if (!result.rows.length) {
+      throw new InvariantError('Kolaborasi gagal diverifikasi');
     }
   }
   

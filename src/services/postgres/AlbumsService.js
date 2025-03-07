@@ -7,8 +7,9 @@ const ClientError = require('../../exceptions/ClientError');
 
 
 class AlbumsService {
-    constructor() {
+    constructor(cacheService) {
         this._pool = new Pool();
+        this._cacheService = cacheService;
     }
 
     async addAlbum({name, year}) {
@@ -112,39 +113,17 @@ class AlbumsService {
         await this._pool.query(query);
     }
 
-    async addLikeAlbum(userId, albumId) {
-        const albumCheck = {
-            text: 'SELECT id FROM albums WHERE id = $1',
-            values: [albumId],
-        }
-
-        const albumCheckResult = await this._pool.query(albumCheck);
-
-        if (!albumCheckResult.rows.length) {
-            throw new NotFoundError('Album tidak ditemukan');
-        };
-
-        const likeCheck = {
-            text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
-            values: [userId, albumId],
-        };
-
-        const likeCheckResult = await this._pool.query(likeCheck);
-        if (likeCheckResult.rows.length) {
-            throw new ClientError('anda sudah like album');
-        } else {
-            const id = `album-like-${nanoid(16)}`;
-
-            const queryLike = {
-                text: 'INSERT INTO user_album_likes VALUES($1, $2, $3) RETURNING id',
-                values: [id, userId, albumId],
-            };
-
-            await this._pool.query(queryLike);
-        }
-    }
-
     async getLikeAlbumById(albumId) {
+        try {
+            const cachedLikes = await this._cacheService.get(`user_album_likes:${albumId}`);
+            
+            if (cachedLikes !== null) {
+                return { likes: parseInt(cachedLikes, 10), source: 'cache' }; 
+            }
+        } catch (error) {
+            console.warn('Cache service error:', error.message);
+        }
+    
         const albumCheck = {
             text: 'SELECT id FROM albums WHERE id = $1',
             values: [albumId],
@@ -157,19 +136,52 @@ class AlbumsService {
         }
     
         const query = {
-            text: `
-                SELECT 
-                    COUNT(l.id) AS total_likes
-                FROM albums a 
-                LEFT JOIN user_album_likes l ON a.id = l.album_id
-                WHERE a.id = $1
-            `,
+            text: `SELECT COUNT(id) AS total_likes FROM user_album_likes WHERE album_id = $1`,
             values: [albumId],
         };
     
         const result = await this._pool.query(query);
+        const totalLikes = parseInt(result.rows[0].total_likes, 10);
     
-        return { likes: parseInt(result.rows[0].total_likes, 10) };
+        try {
+            await this._cacheService.set(`user_album_likes:${albumId}`, totalLikes);
+        } catch (error) {
+            console.warn('Failed to set cache:', error.message);
+        }
+    
+        return { likes: totalLikes, source: 'server' };
+    }
+    
+    async addLikeAlbum(userId, albumId) {
+        const albumCheck = {
+            text: 'SELECT id FROM albums WHERE id = $1',
+            values: [albumId],
+        };
+    
+        const albumCheckResult = await this._pool.query(albumCheck);
+    
+        if (!albumCheckResult.rows.length) {
+            throw new NotFoundError('Album tidak ditemukan');
+        }
+    
+        const likeCheck = {
+            text: 'SELECT id FROM user_album_likes WHERE user_id = $1 AND album_id = $2',
+            values: [userId, albumId],
+        };
+    
+        const likeCheckResult = await this._pool.query(likeCheck);
+        if (likeCheckResult.rows.length) {
+            throw new ClientError('Anda sudah like album ini');
+        }
+    
+        const id = `album-like-${nanoid(16)}`;
+        const queryLike = {
+            text: 'INSERT INTO user_album_likes VALUES($1, $2, $3) RETURNING id',
+            values: [id, userId, albumId],
+        };
+    
+        await this._pool.query(queryLike);
+        await this._cacheService.delete(`user_album_likes:${albumId}`); 
     }
     
     async deleteLikeAlbum(userId, albumId) {
@@ -195,7 +207,9 @@ class AlbumsService {
             throw new NotFoundError('Like gagal dihapus. Like tidak ditemukan untuk album ini');
         }
     
+        await this._cacheService.delete(`user_album_likes:${albumId}`); 
     }
+    
 }
 
 module.exports = AlbumsService;
